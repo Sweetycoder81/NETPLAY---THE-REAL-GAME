@@ -53,6 +53,14 @@ Write-Host "[NETPLAY] Pushing to GitHub..." -ForegroundColor Cyan
 # Ensure main branch name
 git branch -M main
 
+# If remote already has commits, integrate them before first push
+git fetch origin 2>$null | Out-Null
+try {
+  git pull --rebase --allow-unrelated-histories origin main
+} catch {
+  # If pull fails (e.g. no remote branch), continue to push attempt
+}
+
 # First push (will prompt for auth if needed)
 git push -u origin main
 
