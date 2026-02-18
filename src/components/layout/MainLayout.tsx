@@ -12,6 +12,7 @@ import { useNavBeep } from '../../hooks/useNavBeep';
 import LobbyPanel from '../social/LobbyPanel';
 import LevelBadge from '../ui/LevelBadge';
 import { getRankFromExp } from '../../utils/leveling';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const mousePosition = useMousePosition();
   const { beep } = useNavBeep();
+  const { mode, toggle } = useTheme();
   const [lobbyOpen, setLobbyOpen] = useState(false);
 
   const player = useMemo(() => {
@@ -35,21 +37,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const rank = useMemo(() => getRankFromExp(player.exp), [player.exp]);
   
   const navigation = [
-    { name: 'COMMAND', href: '/', icon: HomeIcon },
-    { name: 'BATTLEFIELDS', href: '/courts', icon: CalendarIcon },
-    { name: 'PROFILE', href: '/dashboard', icon: UserCircleIcon },
-    { name: 'TOURNAMENTS', href: '/tournaments', icon: TrophyIcon },
+    { name: 'DASHBOARD', href: '/dashboard', icon: HomeIcon },
+    { name: 'NEAR ME', href: '/near-me', icon: CalendarIcon },
+    { name: 'TURFS', href: '/turfs', icon: TrophyIcon },
+    { name: 'PACKAGES', href: '/packages', icon: UserCircleIcon },
   ];
   
   const isActive = (path: string) => location.pathname === path;
   
   return (
-    <div className="min-h-screen bg-dark-bg text-white relative overflow-hidden">
+    <motion.div
+      className="min-h-screen bg-dark-bg text-white relative overflow-hidden"
+      animate={{ filter: mode === 'day' ? 'saturate(1.05) brightness(1.02)' : 'saturate(1) brightness(1)' }}
+      transition={{ duration: 0.35 }}
+    >
       {/* Animated Background Gradient */}
       <div 
         className="fixed inset-0 opacity-30 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(0, 243, 255, 0.2) 0%, rgba(112, 0, 255, 0.1) 25%, transparent 50%)`,
+          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, var(--glow-1) 0%, var(--glow-2) 25%, transparent 50%)`,
         }}
       />
 
@@ -156,6 +162,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               transition={{ duration: 0.5 }}
             >
               <button
+                onMouseEnter={() => beep({ frequency: 740, durationMs: 28 })}
+                onClick={toggle}
+                className="text-gray-400 hover:text-neon-cyan transition-colors font-mono text-sm"
+              >
+                [{mode === 'day' ? 'NIGHT MODE' : 'DAY MODE'}]
+              </button>
+              <button
                 onMouseEnter={() => beep({ frequency: 990, durationMs: 30 })}
                 onClick={() => setLobbyOpen(true)}
                 className="text-gray-400 hover:text-neon-cyan transition-colors font-mono text-sm"
@@ -198,7 +211,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         playerName={player.name}
         playerExp={player.exp}
       />
-    </div>
+    </motion.div>
   );
 };
 

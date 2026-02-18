@@ -13,6 +13,15 @@ export type LobbyMessage = {
   type: "chat" | "system";
   user?: LobbyUser;
   text: string;
+  attachment?: {
+    name: string;
+    kind: "image" | "file";
+    url?: string;
+  };
+  callLink?: {
+    url: string;
+    label?: string;
+  };
   createdAt: number;
 };
 
@@ -92,6 +101,19 @@ export const useLobbySocket = (opts: { enabled: boolean; name: string }) => {
               }
             : undefined,
           text: String(payload?.text || ""),
+          attachment: payload?.attachment
+            ? {
+                name: String(payload.attachment.name || "file"),
+                kind: payload.attachment.kind === "image" ? "image" : "file",
+                url: payload.attachment.url,
+              }
+            : undefined,
+          callLink: payload?.callLink
+            ? {
+                url: String(payload.callLink.url || ""),
+                label: payload.callLink.label,
+              }
+            : undefined,
           createdAt: Number(payload?.createdAt || Date.now()),
         },
       ]);
@@ -114,24 +136,33 @@ export const useLobbySocket = (opts: { enabled: boolean; name: string }) => {
     };
   }, [opts.enabled, socketUrl, identity.name]);
 
-  const sendMessage = (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
+  const sendMessage = (payload: { text?: string; attachment?: LobbyMessage["attachment"]; callLink?: LobbyMessage["callLink"]; type?: LobbyMessage["type"] }) => {
+    const trimmed = String(payload.text || "").trim();
+    const hasAttachment = Boolean(payload.attachment);
+    const hasCallLink = Boolean(payload.callLink?.url);
+    if (!trimmed && !hasAttachment && !hasCallLink) return;
 
     const socket = socketRef.current;
 
     const optimistic: LobbyMessage = {
       id: makeId(),
-      type: "chat",
+      type: payload.type || "chat",
       user: { id: "me", name: identity.name },
       text: trimmed,
+      attachment: payload.attachment,
+      callLink: payload.callLink,
       createdAt: Date.now(),
     };
 
     setMessages((prev) => [...prev, optimistic]);
 
     if (socket?.connected) {
-      socket.emit("lobby:message", { text: trimmed });
+      socket.emit("lobby:message", {
+        type: optimistic.type,
+        text: trimmed,
+        attachment: optimistic.attachment,
+        callLink: optimistic.callLink,
+      });
     }
   };
 

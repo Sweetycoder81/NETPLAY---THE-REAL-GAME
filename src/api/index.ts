@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const IPV4_FALLBACK_BASE_URL = API_BASE_URL.replace('://localhost', '://127.0.0.1');
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,6 +23,18 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Retry once with IPv4 localhost to avoid Windows resolving localhost to ::1
+    // which can fail if the backend only listens on IPv4.
+    const config = error?.config as any;
+    const isNetworkError = !error?.response;
+    const canRetry = Boolean(config) && !config.__ipv4Retry;
+    const usesLocalhost = typeof config?.baseURL === 'string' && config.baseURL.includes('://localhost');
+    if (isNetworkError && canRetry && usesLocalhost) {
+      config.__ipv4Retry = true;
+      config.baseURL = IPV4_FALLBACK_BASE_URL;
+      return api.request(config);
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

@@ -35,7 +35,14 @@ const Login: React.FC = () => {
       
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const backendMessage = err?.response?.data?.message;
+      const isNetwork = !err?.response;
+      setError(
+        backendMessage ||
+          (isNetwork
+            ? 'Server unreachable. Start backend on 127.0.0.1:5000 (API) and try again.'
+            : 'Login failed. Please try again.')
+      );
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,34 @@
 :root {
   --mouse-x: 50%;
   --mouse-y: 50%;
+
+  --bg: #020617;
+  --text: #ffffff;
+  --muted: rgba(148, 163, 184, 0.9);
+  --glass-1: rgba(255, 255, 255, 0.10);
+  --glass-2: rgba(255, 255, 255, 0.05);
+  --glass-border-1: rgba(255, 255, 255, 0.20);
+  --glass-border-2: rgba(255, 255, 255, 0.10);
+
+  --accent: #00f3ff;
+  --accent-2: #7000ff;
+  --glow-1: rgba(0, 243, 255, 0.15);
+  --glow-2: rgba(112, 0, 255, 0.10);
+}
+
+body[data-theme="day"] {
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: rgba(30, 41, 59, 0.72);
+  --glass-1: rgba(255, 255, 255, 0.40);
+  --glass-2: rgba(255, 255, 255, 0.30);
+  --glass-border-1: rgba(15, 23, 42, 0.14);
+  --glass-border-2: rgba(15, 23, 42, 0.10);
+
+  --accent: #0ea5e9;
+  --accent-2: #f97316;
+  --glow-1: rgba(14, 165, 233, 0.22);
+  --glow-2: rgba(249, 115, 22, 0.14);
 }
 
 body {
@@ -15,9 +43,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #020617;
+  background: var(--bg);
+  color: var(--text);
   position: relative;
   overflow-x: hidden;
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
 body::before {
@@ -29,13 +59,13 @@ body::before {
   height: 100%;
   background: radial-gradient(
     circle at var(--mouse-x) var(--mouse-y),
-    rgba(0, 243, 255, 0.15) 0%,
-    rgba(112, 0, 255, 0.1) 25%,
+    var(--glow-1) 0%,
+    var(--glow-2) 25%,
     transparent 50%
   );
   pointer-events: none;
   z-index: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, background 300ms ease;
 }
 
 code {
@@ -48,16 +78,57 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .glass-card {
-  @apply backdrop-blur-md bg-white/10 border border-white/20 rounded-lg;
+  backdrop-filter: blur(12px);
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border-1);
+  border-radius: 0.5rem;
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
 }
 
 .glass-card-2 {
-  @apply backdrop-blur-lg bg-white/5 border border-white/10 rounded-lg;
+  backdrop-filter: blur(16px);
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border-2);
+  border-radius: 0.5rem;
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+
+body[data-theme="day"] .glass-card,
+body[data-theme="day"] .glass-card-2 {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+}
+
+.text-neon-cyan {
+  color: var(--accent) !important;
+}
+
+.border-neon-cyan {
+  border-color: var(--accent) !important;
+}
+
+.bg-neon-cyan {
+  background-color: var(--accent) !important;
+}
+
+.ring-neon-cyan {
+  --tw-ring-color: var(--accent) !important;
+}
+
+.text-electric-purple {
+  color: var(--accent-2) !important;
+}
+
+.border-electric-purple {
+  border-color: var(--accent-2) !important;
+}
+
+.bg-electric-purple {
+  background-color: var(--accent-2) !important;
 }
 
 .neon-border {
   position: relative;
-  background: linear-gradient(45deg, transparent, #00f3ff, transparent);
+  background: linear-gradient(45deg, transparent, var(--accent), transparent);
   background-size: 200% 200%;
   animation: borderBeam 3s linear infinite;
 }
@@ -73,12 +144,12 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes pulseGlow {
   0%, 100% { 
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.5),
-                0 0 40px rgba(0, 243, 255, 0.3);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 55%, transparent),
+                0 0 40px color-mix(in srgb, var(--accent) 35%, transparent);
   }
   50% { 
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.8),
-                0 0 60px rgba(0, 243, 255, 0.5);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 80%, transparent),
+                0 0 60px color-mix(in srgb, var(--accent) 55%, transparent);
   }
 }
 
